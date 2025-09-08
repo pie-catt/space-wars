@@ -1,16 +1,17 @@
 class MainScene extends Phaser.Scene {
-  constructor(){ super('main'); }
+  constructor() { super('main'); }
 
   preload() {
     const g = this.add.graphics();
-    g.fillStyle(0x63b3ff, 1).fillRect(0, 0, 16, 16);
-    g.generateTexture('player', 16, 16); g.clear();
 
-    g.fillStyle(0xffffff, 1).fillRect(0, 0, 4, 12);
-    g.generateTexture('bullet', 4, 12); g.clear();
+    // Load a simple player sprite
+    this.load.image('player', 'assets/player_ship_32x32.png');
 
-    g.fillStyle(0xff5860, 1).fillRect(0, 0, 20, 20);
-    g.generateTexture('enemy', 20, 20); g.destroy();
+    // Load a simple bullet sprite
+    this.load.image('bullet', 'assets/bullet_32x32.png');
+
+    // Load a simple enemy sprite
+    this.load.image('enemy', 'assets/enemy_ship_32x32.png');
   }
 
   create() {
@@ -19,9 +20,14 @@ class MainScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#0b0f1a');
 
     // Player
-    this.player = this.physics.add.image(this.scale.width/2, this.scale.height - 80, 'player');
+    this.player = this.physics.add.image(
+      this.scale.width / 2,
+      this.scale.height - 80,
+      'player'
+    );
     this.player.setCollideWorldBounds(true);
-
+    this.player.setScale(2); // shrink if needed
+  
     // Input
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,SPACE');
@@ -49,11 +55,11 @@ class MainScene extends Phaser.Scene {
 
     // UI
     this.score = 0;
-    this.ui = this.add.text(12, 12, 'Score: 0', { fontFamily:'monospace', fontSize:18, color:'#d7e2ff' }).setScrollFactor(0);
+    this.ui = this.add.text(12, 12, 'Score: 0', { fontFamily: 'monospace', fontSize: 18, color: '#d7e2ff' }).setScrollFactor(0);
 
     // Touch
     this.input.on('pointerdown', () => this.tryFire());
-    this.input.on('pointermove', (p) => { if (p.isDown) this.player.x = Phaser.Math.Clamp(p.x, 8, this.scale.width-8); });
+    this.input.on('pointermove', (p) => { if (p.isDown) this.player.x = Phaser.Math.Clamp(p.x, 8, this.scale.width - 8); });
 
     // Resize safety
     this.scale.on('resize', this.onResize, this);
@@ -80,7 +86,8 @@ class MainScene extends Phaser.Scene {
     e.body.enable = true;                          // force-enable in case it was disabled
     e.body.reset(x, -20);
     e.setVelocity(0, Phaser.Math.Between(90, 170));
-    e.setCircle(10).body.setOffset(0,0);
+    e.setScale(2); // shrink if needed
+    e.setCircle(10).body.setOffset(0, 0);
   }
 
   tryFire() {
@@ -116,8 +123,8 @@ class MainScene extends Phaser.Scene {
     if (this.dead) return;
     this.dead = true;
     this.physics.pause();
-    this.add.text(this.scale.width/2, this.scale.height/2, 'GAME OVER\nPress R to Restart', {
-      fontFamily:'monospace', fontSize:28, color:'#ff8fa3', align:'center'
+    this.add.text(this.scale.width / 2, this.scale.height / 2, 'GAME OVER\nPress R to Restart', {
+      fontFamily: 'monospace', fontSize: 28, color: '#ff8fa3', align: 'center'
     }).setOrigin(0.5);
     this.input.keyboard.once('keydown-R', () => this.scene.restart());
   }
